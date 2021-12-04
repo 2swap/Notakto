@@ -8,68 +8,85 @@ var ctx = canvas.getContext("2d");
 
 
 
-var board = 0;
-var m=6;						// holes per side
-var n=1;						// counters per hole
-var h=m*2+2;					// total number of pits in board
-var northsKalahah = m*2+1;		// Array index of North's large pit
-var southsKalahah = m;			// Array index of South's large pit
-var totalStones = n*m*2;		// Amount of stones on board in total
 
 var mx = my = mb = 0; // Mouse coordinates and button
+var mouseHoverColumn;
+var mouseHoverRow;
 
+var w = window.innerWidth;
+var h = window.innerHeight; // Canvas width and height
 
-var stoneWidth = 40;
-var boardMarg = stoneWidth/2;
-var boardWidth = stoneWidth*7;
-var boardHeight = stoneWidth*6;
+var ops = 0;
+var board = 0;
+
+var squareWidth = w/15;
+var boardMarg = squareWidth/2;
+var boardWidth = squareWidth*3;
+var boardHeight = boardWidth;
 var rbx = w/2-boardWidth/2, rby = h/2-boardHeight/2; 
 
 
 
-var ops = 0;
-var empty = 0;
 
-var w = window.innerWidth;
-var h = window.innerHeight; // Canvas width and height
-var players = 0;
-var rings = 0;
-var globalTimer = 100000;
+socket.emit('requestBoard');
 
-var lx = 0, ly = 0;//center of screen
-var zoom = 1;//proportional to speed
-var zoomMult = 1;
-var wheelRadius = 20;
-
-
-
-socket.emit('requestBody');
-
-
-function isKalahah(x){
-	return x == northsKalahah || x == southsKalahah;
-}
 
 
 function render(){
-	if(ops > 0)
+	if(ops != 0)
 		return;
+	ops++;
+
+	//render background
 	ctx.fillStyle = "white";
 	ctx.fillRect(0,0,w,h);
-	ops++;
 	
 	ctx.save();
-	if(board == 0) rMenu();
-	else rBoard();
+	if(board == 0) renderMenu();
+	else renderBoard();
 	ctx.restore();
 
-	ops--;
+	ops = 0;
+}
+function renderMenu(){
+	ctx.fillStyle = "black";
+	write("Make Friend Game", 10, 10);
+	write("Join Friend Game", 10, 40);
+	write("Play With Random", 10, 70);
+}
+function renderBoard(){
+	//render board outline
+	ctx.fillStyle = board.isDead?"#444444":"#cccccc";
+	roundRect(rbx-boardMarg/2,rby-boardMarg/2,boardWidth+boardMarg,boardHeight+boardMarg, boardMarg);
+
+	if(!board.isDead){
+		//render highlighted column
+		ctx.fillStyle = "#999999";
+		if(mouseHoverColumn >= 0 && mouseHoverColumn < 3 && mouseHoverRow >= 0 && mouseHoverRow < 3){
+			ctx.beginPath();
+			ctx.arc(rbx+(mouseHoverColumn+.5)*squareWidth, rby+(mouseHoverRow+.5)*squareWidth, squareWidth*.4, 0, 2*Math.PI);
+			ctx.fill();
+		}
+	}
+
+	telegrama(40);
+	for(var y = 0; y < 3; y++)
+		for(var x = 0; x < 3; x++){
+			//render stone
+			
+			var letter = board.grid[y][x];
+
+			//render number
+			ctx.textAlign = "center";
+			ctx.fillStyle = "#000000";
+			ctx.fillText(letter, rbx+(x+.5)*squareWidth, rby+(y+.65)*squareWidth);
+			
+		}
 }
 
 
 //packet handling
 socket.on('board', function (data) {
-	inGame = true;
 	board = data.board;
 	console.log("Got board update");
 });
@@ -81,7 +98,7 @@ setInterval(function(){
 		canvas.height = h;
 	}
 	render();
-},40);
+},100);
 
 
 
@@ -121,66 +138,18 @@ function roundRect(x, y, w, h, r) {
 	ctx.fill();
 }
 
-function rMenu(){
-	ctx.fillStyle = "black";
-	write("Make Friend Game", 10, 10);
-	write("Join Friend Game", 10, 40);
-	write("Play With Random", 10, 70);
-}
-function rBoard(){
-	//render board outline
-	ctx.fillStyle = "#0077ff";
-	roundRect(rbx-boardMarg/2,rby-boardMarg/2,boardWidth+boardMarg,boardHeight+boardMarg,boardMarg);
-
-	//render highlighted column
-	var mouseHoverColumn = Math.floor((mx-rbx)/stoneWidth);
-	ctx.fillStyle = "#0099ff";
-	if(mouseHoverColumn >= 0 && mouseHoverColumn < 7&& my >= rby && my < rby + boardHeight)
-		roundRect(rbx+mouseHoverColumn*stoneWidth,rby,stoneWidth,boardHeight,boardMarg);
-	
-	//render stones and numbers
-	telegrama(20);
-	for(var y = 0; y < 6; y++)
-		for(var x = 0; x < 7; x++){
-			//render stone
-			var boardHere = board[5-y][x];
-			ctx.fillStyle = cols[Math.sign(boardHere)+1];
-			ctx.beginPath();
-			ctx.arc(rbx+(x+.5)*stoneWidth, rby+(y+.5)*stoneWidth, stoneWidth*.4, 0, 2*Math.PI);
-			ctx.fill();
-
-			//render number
-			ctx.textAlign = "center";
-			ctx.fillStyle = "#000000";
-			if(boardHere != 0)
-				ctx.fillText(Math.abs(boardHere), rbx+(x+.5)*stoneWidth, rby+(y+.65)*stoneWidth);
-		}
-}
 
 document.addEventListener("mousemove",mouse);
 document.addEventListener("mouseup",click);
 
 function click(){
-	var column = Math.floor((mx-rbx)/stoneWidth);
-	var row = 0;
-	while(board[row][column] != 0) {
-		row++;
-		if(row >= 6) {
-			console.log("column full");
-			return;
-		}
-	}
-	if(column < 0 || column > 6 || my < rby || my > rby+boardHeight) {
-		console.log("Clicked outside of board");
-		return;
-	}
-	console.log("Clicked on column " + column);
-	board[row][column] = selectedColor * moveNumber;
-	selectedColor *= -1;
-	moveNumber++;
+	socket.emit('click', {x:mouseHoverColumn, y:mouseHoverRow});
 }
+
 function mouse(e){
 	mx = e.clientX;
 	my = e.clientY;
 	mb = e.button;
+	mouseHoverColumn = Math.floor((mx-rbx)/squareWidth);
+	mouseHoverRow = Math.floor((my-rby)/squareWidth);
 }

@@ -12,22 +12,54 @@ httpServer.listen(port);
 console.log("Server started on port " + port);
 var io = require('socket.io')(httpServer)//, "path": "/notakto/io"});
 
-var games = {};
-var activeGameID = 0;
+var board;
+makeBoard();
+
 var sockets = {};
 
-var m=6;						// holes per side
-var n=1;						// counters per hole
-var h=m*2+2;					// total number of pits in board
-var northsKalahah = m*2+1;		// Array index of North's large pit
-var southsKalahah = m;			// Array index of South's large pit
-var totalStones = n*m*2;		// Amount of stones on board in total
+function send(socket, msg, data){
+	if(typeof socket !== "undefined")
+		socket.emit(msg, data);
+}
 
+function checkDead(){
+	for(var y = 0; y < 3; y++){
+		allFilled = true;
+		for(var x = 0; x < 3; x++){
+			if(board.grid[y][x] == ''){
+				allFilled = false;
+			}
+		}
+		if(allFilled)
+			return true;
+	}
 
-function send(id, msg, data){
-	var s = sockets[id];
-	if(typeof s !== "undefined")
-		s.emit(msg, data);
+	for(var x = 0; x < 3; x++){
+		allFilled = true;
+		for(var y = 0; y < 3; y++){
+			if(board.grid[y][x] == ''){
+				allFilled = false;
+			}
+		}
+		if(allFilled)
+			return true;
+	}
+
+	if(board.grid[0][0]!='' && board.grid[1][1]!='' && board.grid[2][2]!='')
+		return true;
+	if(board.grid[2][0]!='' && board.grid[1][1]!='' && board.grid[0][2]!='')
+		return true;
+
+	return false;
+}
+
+function broadcast(msg, data){
+	for (s in sockets)
+		send(sockets[s], msg, data);
+}
+
+function broadcastBoard(){
+	broadcast('board', {board:board});
 }
 
 function makeGame(i, p1, p2){
@@ -36,11 +68,8 @@ function makeGame(i, p1, p2){
 	return g;
 }
 
-function newBoard(){
-	b = new Array(h);
-	for(var i in b)
-		b[i] = n;
-	return b;
+function makeBoard(msg, data){
+	board = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
 }
 
 var Game = function(i, p1){
@@ -79,6 +108,49 @@ io.sockets.on('connection', function(socket){
 			socket.gameID = activeGameID;
 			activeGameID = 0;
 		}
+	});
+	
+	socket.on('requestBoard',function(data){
+		broadcastBoard()
+	});
+	
+	socket.on('click',function(data){
+
+		// don't permit data with absent coordinates
+		if(typeof data === "undefined")
+			return;
+
+		// don't permit data with absent coordinates
+		if(!("x" in data) || !("y" in data))
+			return;
+
+		var x = data.x;
+		var y = data.y;
+
+		// don't permit data with non-integer coordinates
+		if(!Number.isInteger(x) || !Number.isInteger(y))
+			return;
+
+		// don't permit out-of-bounds coordinates
+		if(x >= 3 || x < 0 || y >= 3 || y < 0)
+			return;
+
+		// don't permit play on non-empty square
+		if(board.grid[y][x] != '')
+			return;
+
+		// don't permit play on dead board
+		if(board.isDead)
+			return;
+
+		console.log("Player clicked at (" + y + ", " + x + ")")
+		board.grid[y][x] = 'x';
+
+		if(checkDead())
+			board.isDead = true;
+
+		broadcastBoard();
+
 	});
 	
 	socket.on('joinfriendgame',function(data){
