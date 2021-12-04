@@ -12,18 +12,17 @@ var ctx = canvas.getContext("2d");
 var mx = my = mb = 0; // Mouse coordinates and button
 var mouseHoverColumn;
 var mouseHoverRow;
+var mouseHoverBoard;
 
 var w = window.innerWidth;
 var h = window.innerHeight; // Canvas width and height
 
 var ops = 0;
-var board = 0;
+var boardList = 0;
 
 var squareWidth = w/15;
 var boardMarg = squareWidth/2;
 var boardWidth = squareWidth*3;
-var boardHeight = boardWidth;
-var rbx = w/2-boardWidth/2, rby = h/2-boardHeight/2; 
 
 
 
@@ -42,8 +41,8 @@ function render(){
 	ctx.fillRect(0,0,w,h);
 	
 	ctx.save();
-	if(board == 0) renderMenu();
-	else renderBoard();
+	if(boardList == 0) renderMenu();
+	else renderAllBoards();
 	ctx.restore();
 
 	ops = 0;
@@ -54,17 +53,30 @@ function renderMenu(){
 	write("Join Friend Game", 10, 40);
 	write("Play With Random", 10, 70);
 }
-function renderBoard(){
+function renderAllBoards(){
+	for(var i = 0; i < 3; i++){
+		renderBoard(i, xCenterOfIthBoard(i), h/2);
+	}
+}
+function xCenterOfIthBoard(i){
+	return w/2+(i-1)*(boardWidth+2*boardMarg);
+}
+function yCenterOfIthBoard(i){
+	return h/2;
+}
+function renderBoard(i, rx, ry){
 	//render board outline
-	ctx.fillStyle = board.isDead?"#444444":"#cccccc";
-	roundRect(rbx-boardMarg/2,rby-boardMarg/2,boardWidth+boardMarg,boardHeight+boardMarg, boardMarg);
+	ctx.fillStyle = boardList[i].isDead?"#444444":"#cccccc";
+	roundRect(rx-boardWidth/2-boardMarg/2,ry-boardWidth/2-boardMarg/2,boardWidth+boardMarg,boardWidth+boardMarg, boardMarg);
 
-	if(!board.isDead){
+	if(!boardList[i].isDead && i == mouseHoverBoard){
 		//render highlighted column
 		ctx.fillStyle = "#999999";
 		if(mouseHoverColumn >= 0 && mouseHoverColumn < 3 && mouseHoverRow >= 0 && mouseHoverRow < 3){
 			ctx.beginPath();
-			ctx.arc(rbx+(mouseHoverColumn+.5)*squareWidth, rby+(mouseHoverRow+.5)*squareWidth, squareWidth*.4, 0, 2*Math.PI);
+			ctx.arc(xCenterOfIthBoard(i)-boardWidth/2+(mouseHoverColumn+.5)*squareWidth,
+					yCenterOfIthBoard(i)-boardWidth/2+(mouseHoverRow+.5)*squareWidth,
+					squareWidth*.4, 0, 2*Math.PI);
 			ctx.fill();
 		}
 	}
@@ -73,30 +85,30 @@ function renderBoard(){
 	for(var y = 0; y < 3; y++)
 		for(var x = 0; x < 3; x++){
 			//render stone
-			
-			var letter = board.grid[y][x];
+			var letter = boardList[i].grid[y][x];
 
 			//render number
 			ctx.textAlign = "center";
 			ctx.fillStyle = "#000000";
-			ctx.fillText(letter, rbx+(x+.5)*squareWidth, rby+(y+.65)*squareWidth);
+			ctx.fillText(letter, xCenterOfIthBoard(i)-boardWidth/2+(x+.5)*squareWidth, yCenterOfIthBoard(i)-boardWidth/2+(y+.65)*squareWidth);
 			
 		}
 }
 
 
 //packet handling
-socket.on('board', function (data) {
-	board = data.board;
-	console.log("Got board update");
+socket.on('boardList', function (data) {
+	boardList = data.boardList;
+	console.log("Got boardList update");
 });
 setInterval(function(){
 	w = window.innerWidth;
 	h = window.innerHeight;
-	if(canvas.width != w || canvas.height != h){
-		canvas.width = w;
-		canvas.height = h;
-	}
+	canvas.width = w;
+	canvas.height = h;
+	squareWidth = w/15;
+	boardMarg = squareWidth/2;
+	boardWidth = squareWidth*3;
 	render();
 },100);
 
@@ -143,13 +155,25 @@ document.addEventListener("mousemove",mouse);
 document.addEventListener("mouseup",click);
 
 function click(){
-	socket.emit('click', {x:mouseHoverColumn, y:mouseHoverRow});
+	socket.emit('click', {x:mouseHoverColumn, y:mouseHoverRow, i:mouseHoverBoard});
 }
 
 function mouse(e){
 	mx = e.clientX;
 	my = e.clientY;
 	mb = e.button;
-	mouseHoverColumn = Math.floor((mx-rbx)/squareWidth);
-	mouseHoverRow = Math.floor((my-rby)/squareWidth);
+
+	var closest = -1;
+	var closestDist = 100000;
+	for(var i = 0; i < 3; i++){
+		var dist = Math.abs(mx - xCenterOfIthBoard(i));
+		if(dist < closestDist){
+			closest = i;
+			closestDist = dist;
+		}
+	}
+
+	mouseHoverBoard = closest;
+	mouseHoverColumn = Math.floor((mx-xCenterOfIthBoard(mouseHoverBoard)+boardWidth/2)/squareWidth);
+	mouseHoverRow =    Math.floor((my-yCenterOfIthBoard(mouseHoverBoard)+boardWidth/2)/squareWidth);
 }

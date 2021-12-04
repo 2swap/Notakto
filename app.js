@@ -12,8 +12,7 @@ httpServer.listen(port);
 console.log("Server started on port " + port);
 var io = require('socket.io')(httpServer)//, "path": "/notakto/io"});
 
-var board;
-makeBoard();
+var boardList = makeBoard();
 
 var sockets = {};
 
@@ -22,11 +21,11 @@ function send(socket, msg, data){
 		socket.emit(msg, data);
 }
 
-function checkDead(){
+function checkDead(i){
 	for(var y = 0; y < 3; y++){
 		allFilled = true;
 		for(var x = 0; x < 3; x++){
-			if(board.grid[y][x] == ''){
+			if(boardList[i].grid[y][x] == ''){
 				allFilled = false;
 			}
 		}
@@ -37,7 +36,7 @@ function checkDead(){
 	for(var x = 0; x < 3; x++){
 		allFilled = true;
 		for(var y = 0; y < 3; y++){
-			if(board.grid[y][x] == ''){
+			if(boardList[i].grid[y][x] == ''){
 				allFilled = false;
 			}
 		}
@@ -45,9 +44,9 @@ function checkDead(){
 			return true;
 	}
 
-	if(board.grid[0][0]!='' && board.grid[1][1]!='' && board.grid[2][2]!='')
+	if(boardList[i].grid[0][0]!='' && boardList[i].grid[1][1]!='' && boardList[i].grid[2][2]!='')
 		return true;
-	if(board.grid[2][0]!='' && board.grid[1][1]!='' && board.grid[0][2]!='')
+	if(boardList[i].grid[2][0]!='' && boardList[i].grid[1][1]!='' && boardList[i].grid[0][2]!='')
 		return true;
 
 	return false;
@@ -59,7 +58,7 @@ function broadcast(msg, data){
 }
 
 function broadcastBoard(){
-	broadcast('board', {board:board});
+	broadcast('boardList', {boardList:boardList});
 }
 
 function makeGame(i, p1, p2){
@@ -69,7 +68,11 @@ function makeGame(i, p1, p2){
 }
 
 function makeBoard(msg, data){
-	board = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
+	var boardList = []
+	for(var i = 0; i < 3; i++){
+		boardList[i] = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
+	}
+	return boardList;
 }
 
 var Game = function(i, p1){
@@ -121,33 +124,34 @@ io.sockets.on('connection', function(socket){
 			return;
 
 		// don't permit data with absent coordinates
-		if(!("x" in data) || !("y" in data))
+		if(!("x" in data) || !("y" in data) || !("i" in data))
 			return;
 
 		var x = data.x;
 		var y = data.y;
+		var i = data.i;
 
 		// don't permit data with non-integer coordinates
-		if(!Number.isInteger(x) || !Number.isInteger(y))
+		if(!Number.isInteger(x) || !Number.isInteger(y) || !Number.isInteger(i))
 			return;
 
 		// don't permit out-of-bounds coordinates
-		if(x >= 3 || x < 0 || y >= 3 || y < 0)
+		if(x >= 3 || x < 0 || y >= 3 || y < 0 || i < 0 || i >= 3)
 			return;
 
 		// don't permit play on non-empty square
-		if(board.grid[y][x] != '')
+		if(boardList[i].grid[y][x] != '')
 			return;
 
 		// don't permit play on dead board
-		if(board.isDead)
+		if(boardList[i].isDead)
 			return;
 
-		console.log("Player clicked at (" + y + ", " + x + ")")
-		board.grid[y][x] = 'x';
+		console.log("Player clicked on board " + i + " at (" + y + ", " + x + ")")
+		boardList[i].grid[y][x] = 'x';
 
-		if(checkDead())
-			board.isDead = true;
+		if(checkDead(i))
+			boardList[i].isDead = true;
 
 		broadcastBoard();
 
