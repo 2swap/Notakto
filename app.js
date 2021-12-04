@@ -10,7 +10,7 @@ app.use('/',express.static(__dirname + '/client'));
 var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("Server started on port " + port);
-var io = require('socket.io')(httpServer)//, "path": "/kalaharena/io"});
+var io = require('socket.io')(httpServer)//, "path": "/notakto/io"});
 
 var games = {};
 var activeGameID = 0;
