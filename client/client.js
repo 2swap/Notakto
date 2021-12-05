@@ -1,4 +1,10 @@
-var socket = io('127.0.0.1:10001');
+var production = false;
+
+var socket;
+if(production)
+	socket = io('alexhontz.com', {path:'/notakto/io'});
+else
+	socket = io('127.0.0.1:10003');
 
 var canvas = document.getElementById('ctx');
 canvas.width = window.innerWidth;

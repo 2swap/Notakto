@@ -1,8 +1,10 @@
+var production = false;
+
 var http = require('http');
 var express = require('express');
 var app = express();
 
-var port = 10001;
+var port = 10003;
 
 console.log('Server started');
 console.log('Enabling express...');
@@ -10,7 +12,11 @@ app.use('/',express.static(__dirname + '/client'));
 var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("Server started on port " + port);
-var io = require('socket.io')(httpServer)//, "path": "/notakto/io"});
+var io;
+if(production)
+	io = require('socket.io')(httpServer, {"path": "/notakto/io"});
+else
+	io = require('socket.io')(httpServer);
 
 var boardList = makeBoard();
 
