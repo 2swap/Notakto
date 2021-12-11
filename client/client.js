@@ -15,6 +15,7 @@ var ctx = canvas.getContext("2d");
 
 
 
+var numberOfBoards = 0;
 var mx = my = mb = 0; // Mouse coordinates and button
 var mouseHoverColumn;
 var mouseHoverRow;
@@ -60,20 +61,23 @@ function renderMenu(){
 	write("Play With Random", 10, 70);
 }
 function renderAllBoards(){
-	for(var i = 0; i < 3; i++){
-		renderBoard(i, xCenterOfIthBoard(i), h/2);
+	for(var i = 0; i < numberOfBoards; i++){
+		renderBoard(i, xCenterOfIthBoard(i), yCenterOfIthBoard(i));
 	}
 }
 function xCenterOfIthBoard(i){
-	return w/2+(i-1)*(boardWidth+2*boardMarg);
+	var numberOfBoardsInThisRow = Math.min(numberOfBoards-(i-i%3), 3);
+	return w/2 + (i%3-(numberOfBoardsInThisRow-1)*.5)*(boardWidth+2*boardMarg);
 }
 function yCenterOfIthBoard(i){
-	return h/2;
+	var numberOfRows = Math.ceil(numberOfBoards/3);
+	var whichRow = Math.ceil((i+1)/3)-1;
+	return h/2 + (whichRow-(numberOfRows-1)*.5)*(boardWidth+2*boardMarg);
 }
 function renderBoard(i, rx, ry){
 	//render board outline
 	ctx.fillStyle = boardList[i].isDead?"#444444":"#cccccc";
-	roundRect(rx-boardWidth/2-boardMarg/2,ry-boardWidth/2-boardMarg/2,boardWidth+boardMarg,boardWidth+boardMarg, boardMarg);
+	roundRect(rx-(boardWidth+boardMarg)/2,ry-(boardWidth+boardMarg)/2,boardWidth+boardMarg,boardWidth+boardMarg, boardMarg);
 
 	if(!boardList[i].isDead && i == mouseHoverBoard){
 		//render highlighted column
@@ -105,7 +109,8 @@ function renderBoard(i, rx, ry){
 //packet handling
 socket.on('boardList', function (data) {
 	boardList = data.boardList;
-	console.log("Got boardList update");
+	numberOfBoards = boardList.length;
+	console.log("Got boardList update with " + numberOfBoards + " boards.");
 });
 setInterval(function(){
 	w = window.innerWidth;
@@ -164,6 +169,10 @@ function click(){
 	socket.emit('click', {x:mouseHoverColumn, y:mouseHoverRow, i:mouseHoverBoard});
 }
 
+function square(x){
+	return x*x;
+}
+
 function mouse(e){
 	mx = e.clientX;
 	my = e.clientY;
@@ -171,8 +180,8 @@ function mouse(e){
 
 	var closest = -1;
 	var closestDist = 100000;
-	for(var i = 0; i < 3; i++){
-		var dist = Math.abs(mx - xCenterOfIthBoard(i));
+	for(var i = 0; i < numberOfBoards; i++){
+		var dist = Math.abs(square(mx - xCenterOfIthBoard(i)) + square(my - yCenterOfIthBoard(i)));
 		if(dist < closestDist){
 			closest = i;
 			closestDist = dist;

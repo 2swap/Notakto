@@ -18,6 +18,8 @@ if(production)
 else
 	io = require('socket.io')(httpServer);
 
+
+var numberOfBoards = 6;
 var boardList = makeBoard();
 
 var sockets = {};
@@ -75,7 +77,7 @@ function makeGame(i, p1, p2){
 
 function makeBoard(msg, data){
 	var boardList = []
-	for(var i = 0; i < 3; i++){
+	for(var i = 0; i < numberOfBoards; i++){
 		boardList[i] = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
 	}
 	return boardList;
@@ -120,7 +122,8 @@ io.sockets.on('connection', function(socket){
 	});
 	
 	socket.on('requestBoard',function(data){
-		broadcastBoard()
+		boardList = makeBoard();
+		broadcastBoard();
 	});
 	
 	socket.on('click',function(data){
@@ -142,7 +145,7 @@ io.sockets.on('connection', function(socket){
 			return;
 
 		// don't permit out-of-bounds coordinates
-		if(x >= 3 || x < 0 || y >= 3 || y < 0 || i < 0 || i >= 3)
+		if(x >= 3 || x < 0 || y >= 3 || y < 0 || i < 0 || i >= numberOfBoards)
 			return;
 
 		// don't permit play on non-empty square
