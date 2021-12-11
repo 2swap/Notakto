@@ -2,7 +2,7 @@ var production = false;
 
 var socket;
 if(production)
-	socket = io('alexhontz.com', {path:'/notakto/io'});
+	socket = io('alexhontz.com', {path:'/Notakto/io'});
 else
 	socket = io('127.0.0.1:10003');
 
