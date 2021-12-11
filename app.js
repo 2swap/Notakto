@@ -8,13 +8,16 @@ var port = 10003;
 
 console.log('Server started');
 console.log('Enabling express...');
-app.use('/',express.static(__dirname + '/client'));
+if(production)
+	app.use('/',express.static(__dirname + '/client'));
+else
+	app.use('/Notakto/',express.static(__dirname + '/client'));
 var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("Server started on port " + port);
 var io;
 if(production)
-	io = require('socket.io')(httpServer, {"path": "/notakto/io"});
+	io = require('socket.io')(httpServer, {"path": "/Notakto/io"});
 else
 	io = require('socket.io')(httpServer);
 
