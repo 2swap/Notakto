@@ -1,18 +1,29 @@
+var production = false;
+
 var http = require('http');
 var express = require('express');
 var app = express();
 
-var port = 10001;
+var port = 10003;
 
 
 console.log('Server started');
 console.log('Enabling express...');
-app.use('/',express.static(__dirname + '/client'));
+if(production)
+	app.use('/',express.static(__dirname + '/client'));
+else
+	app.use('/Notakto/',express.static(__dirname + '/client'));
 var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("Server started on port " + port);
-var io = require('socket.io')(httpServer)//, "path": "/notakto/io"});
+var io;
+if(production)
+	io = require('socket.io')(httpServer, {"path": "/Notakto/io"});
+else
+	io = require('socket.io')(httpServer);
 
+
+var numberOfBoards = 6;
 var boardList = makeBoard();
 
 var sockets = {};
@@ -71,7 +82,7 @@ function makeGame(i, p1, p2){
 
 function makeBoard(){
 	var boardList = []
-	for(var i = 0; i < 3; i++){
+	for(var i = 0; i < numberOfBoards; i++){
 		boardList[i] = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
 	}
 	return boardList;
@@ -116,7 +127,8 @@ io.sockets.on('connection', function(socket){
 	});
 	
 	socket.on('requestBoard',function(data){
-		broadcastBoard()
+		boardList = makeBoard();
+		broadcastBoard();
 	});
 
 	socket.on('restart',function(data){
@@ -143,7 +155,7 @@ io.sockets.on('connection', function(socket){
 			return;
 
 		// don't permit out-of-bounds coordinates
-		if(x >= 3 || x < 0 || y >= 3 || y < 0 || i < 0 || i >= 3)
+		if(x >= 3 || x < 0 || y >= 3 || y < 0 || i < 0 || i >= numberOfBoards)
 			return;
 
 		// don't permit play on non-empty square
