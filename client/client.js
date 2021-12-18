@@ -26,7 +26,6 @@ var boardWidth = squareWidth*3;
 
 
 
-
 socket.emit('requestBoard');
 
 
@@ -42,11 +41,26 @@ function render(){
 	
 	ctx.save();
 	if(boardList == 0) renderMenu();
-	else renderAllBoards();
-	ctx.restore();
+	else {
+		renderAllBoards();
+		// renderResetButton();
+	} 
 
+
+	ctx.restore();
+	
 	ops = 0;
 }
+
+// function renderResetButton(){
+// 	roundRect(w/2,h/7, 50, 11, 4);
+// }
+
+function requestGame(){
+	socket.emit('restart');
+}
+
+
 function renderMenu(){
 	ctx.fillStyle = "black";
 	write("Make Friend Game", 10, 10);
@@ -80,6 +94,8 @@ function renderBoard(i, rx, ry){
 			ctx.fill();
 		}
 	}
+
+	
 
 	telegrama(40);
 	for(var y = 0; y < 3; y++)

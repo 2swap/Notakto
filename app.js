@@ -4,6 +4,7 @@ var app = express();
 
 var port = 10001;
 
+
 console.log('Server started');
 console.log('Enabling express...');
 app.use('/',express.static(__dirname + '/client'));
@@ -15,6 +16,7 @@ var io = require('socket.io')(httpServer)//, "path": "/notakto/io"});
 var boardList = makeBoard();
 
 var sockets = {};
+
 
 function send(socket, msg, data){
 	if(typeof socket !== "undefined")
@@ -67,7 +69,7 @@ function makeGame(i, p1, p2){
 	return g;
 }
 
-function makeBoard(msg, data){
+function makeBoard(){
 	var boardList = []
 	for(var i = 0; i < 3; i++){
 		boardList[i] = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
@@ -116,6 +118,11 @@ io.sockets.on('connection', function(socket){
 	socket.on('requestBoard',function(data){
 		broadcastBoard()
 	});
+
+	socket.on('restart',function(data){
+		boardList = makeBoard()
+		broadcastBoard()  
+	});
 	
 	socket.on('click',function(data){
 
@@ -157,6 +164,7 @@ io.sockets.on('connection', function(socket){
 
 	});
 	
+
 	socket.on('joinfriendgame',function(data){
 		if(activeGameID == 0){
 			i = Math.random();
