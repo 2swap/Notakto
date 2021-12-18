@@ -10,9 +10,9 @@ var port = 10003;
 console.log('Server started');
 console.log('Enabling express...');
 if(production)
-	app.use('/',express.static(__dirname + '/client'));
-else
 	app.use('/Notakto/',express.static(__dirname + '/client'));
+else
+	app.use('/',express.static(__dirname + '/client'));
 var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("Server started on port " + port);
