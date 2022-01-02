@@ -1,15 +1,33 @@
-var production = false;
+const fs = require('fs');
+const config = JSON.parse(fs.readFileSync('config.json'));
+
+const config_defaults = {
+	port: 10003,
+	prod_mode: false,
+}
+
+
+for(key in config_defaults)
+	if(!(key in config))
+		config[key] = config_defaults[key];
+
+write_config_to_file(config)
+
+const storeData = (data, path) => {
+	try {
+		fs.writeFileSync(path, JSON.stringify(data))
+	} catch (err) {
+		console.error(err)
+	}
+}
 
 var http = require('http');
 var express = require('express');
 var app = express();
 
-var port = 10003;
-
-
 console.log('Server started');
 console.log('Enabling express...');
-if(production)
+if(config.prod_mode)
 	app.use('/Notakto/',express.static(__dirname + '/client'));
 else
 	app.use('/',express.static(__dirname + '/client'));
@@ -17,7 +35,7 @@ var httpServer = http.createServer(app);
 httpServer.listen(port);
 console.log("Server started on port " + port);
 var io;
-if(production)
+if(config.prod_mode)
 	io = require('socket.io')(httpServer, {"path": "/Notakto/io"});
 else
 	io = require('socket.io')(httpServer);
