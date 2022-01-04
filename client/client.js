@@ -24,6 +24,8 @@ var mx = my = mb = 0; // Mouse coordinates and button
 var ops = 0;
 
 
+var boardList = 0;
+
 
 socket.emit('requestBoard');
 
@@ -35,7 +37,7 @@ function render(){
 	ops++;
 
 	//render background
-	ctx.fillStyle = "white";
+	ctx.fillStyle = "black";
 	ctx.fillRect(0,0,w,h);
 	
 	ctx.save();
@@ -46,15 +48,30 @@ function render(){
 		renderGame();
 	}
 
-
 	ctx.restore();
 	
 	ops = 0;
 }
+setInterval(function(){
+	w = window.innerWidth;
+	h = window.innerHeight;
+	canvas.width = w;
+	canvas.height = h;
+	squareWidth = w/15;
+	boardMarg = squareWidth/2;
+	boardWidth = squareWidth*3;
+	render();
+},100);
 
 function requestGame(){
 	socket.emit('restart');
 }
+
+//packet handling
+socket.on('boardList', function (data) {
+	boardList = data.boardList;
+	console.log("Got boardList update.");
+});
 
 
 function renderMenu(){
@@ -66,23 +83,12 @@ function renderMenu(){
 
 }
 
-
-//packet handling
-socket.on('boardList', function (data) {
-	boardList = data.boardList;
-	numberOfBoards = boardList.length;
-	console.log("Got boardList update with " + numberOfBoards + " boards.");
-});
-setInterval(function(){
-	w = window.innerWidth;
-	h = window.innerHeight;
-	canvas.width = w;
-	canvas.height = h;
-	squareWidth = w/15;
-	boardMarg = squareWidth/2;
-	boardWidth = squareWidth*3;
-	render();
-},100);
+function renderTimerBar(){
+	//todo
+}
+function renderChat(){
+	//todo
+}
 
 
 
@@ -127,7 +133,7 @@ document.addEventListener("mousemove",mouse);
 document.addEventListener("mouseup",click);
 
 function click(){
-	socket.emit('click', {x:mouseHoverColumn, y:mouseHoverRow, i:mouseHoverBoard});
+	gameOnClick();
 }
 
 function square(x){
@@ -138,5 +144,5 @@ function mouse(e){
 	mx = e.clientX;
 	my = e.clientY;
 	mb = e.button;
-	gameOnClick();
+	gameOnMouseMove();
 }

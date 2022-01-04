@@ -1,5 +1,8 @@
+const game = require("./hex_server.js");
+
 const fs = require('fs');
-const config = JSON.parse(fs.readFileSync('config.json'));
+const config_file_path='config.json';
+const config = JSON.parse(fs.readFileSync(config_file_path));
 
 const config_defaults = {
 	port: 10003,
@@ -11,9 +14,9 @@ for(key in config_defaults)
 	if(!(key in config))
 		config[key] = config_defaults[key];
 
-write_config_to_file(config)
+write_config_to_file(config, config_file_path)
 
-const storeData = (data, path) => {
+function write_config_to_file(data, path) {
 	try {
 		fs.writeFileSync(path, JSON.stringify(data))
 	} catch (err) {
@@ -32,8 +35,8 @@ if(config.prod_mode)
 else
 	app.use('/',express.static(__dirname + '/client'));
 var httpServer = http.createServer(app);
-httpServer.listen(port);
-console.log("Server started on port " + port);
+httpServer.listen(config.port);
+console.log("Server started on port " + config.port);
 var io;
 if(config.prod_mode)
 	io = require('socket.io')(httpServer, {"path": "/Notakto/io"});
@@ -41,8 +44,7 @@ else
 	io = require('socket.io')(httpServer);
 
 
-var numberOfBoards = 6;
-var boardList = makeBoard();
+var boardList = game.makeBoard();
 
 var sockets = {};
 
@@ -52,36 +54,7 @@ function send(socket, msg, data){
 		socket.emit(msg, data);
 }
 
-function checkDead(i){
-	for(var y = 0; y < 3; y++){
-		allFilled = true;
-		for(var x = 0; x < 3; x++){
-			if(boardList[i].grid[y][x] == ''){
-				allFilled = false;
-			}
-		}
-		if(allFilled)
-			return true;
-	}
 
-	for(var x = 0; x < 3; x++){
-		allFilled = true;
-		for(var y = 0; y < 3; y++){
-			if(boardList[i].grid[y][x] == ''){
-				allFilled = false;
-			}
-		}
-		if(allFilled)
-			return true;
-	}
-
-	if(boardList[i].grid[0][0]!='' && boardList[i].grid[1][1]!='' && boardList[i].grid[2][2]!='')
-		return true;
-	if(boardList[i].grid[2][0]!='' && boardList[i].grid[1][1]!='' && boardList[i].grid[0][2]!='')
-		return true;
-
-	return false;
-}
 
 function broadcast(msg, data){
 	for (s in sockets)
@@ -96,14 +69,6 @@ function makeGame(i, p1, p2){
 	g = Game(i, p1, p2);
 	games[i] = g;
 	return g;
-}
-
-function makeBoard(){
-	var boardList = []
-	for(var i = 0; i < numberOfBoards; i++){
-		boardList[i] = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
-	}
-	return boardList;
 }
 
 var Game = function(i, p1){
@@ -149,48 +114,13 @@ io.sockets.on('connection', function(socket){
 	});
 
 	socket.on('restart',function(data){
-		boardList = makeBoard()
-		broadcastBoard()  
+		boardList = game.makeBoard();
+		broadcastBoard()
 	});
 	
 	socket.on('click',function(data){
-
-		// don't permit data with absent coordinates
-		if(typeof data === "undefined")
-			return;
-
-		// don't permit data with absent coordinates
-		if(!("x" in data) || !("y" in data) || !("i" in data))
-			return;
-
-		var x = data.x;
-		var y = data.y;
-		var i = data.i;
-
-		// don't permit data with non-integer coordinates
-		if(!Number.isInteger(x) || !Number.isInteger(y) || !Number.isInteger(i))
-			return;
-
-		// don't permit out-of-bounds coordinates
-		if(x >= 3 || x < 0 || y >= 3 || y < 0 || i < 0 || i >= numberOfBoards)
-			return;
-
-		// don't permit play on non-empty square
-		if(boardList[i].grid[y][x] != '')
-			return;
-
-		// don't permit play on dead board
-		if(boardList[i].isDead)
-			return;
-
-		console.log("Player clicked on board " + i + " at (" + y + ", " + x + ")")
-		boardList[i].grid[y][x] = 'x';
-
-		if(checkDead(i))
-			boardList[i].isDead = true;
-
-		broadcastBoard();
-
+		if(game.onClientClick(boardList, data))
+			broadcastBoard();
 	});
 	
 
