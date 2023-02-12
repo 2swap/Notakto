@@ -1,7 +1,8 @@
 const game = require("./kalah_server.js");
 
 const fs = require('fs');
-const config_file_path='client/config.json';
+const config_file_path='config.json';
+const client_config_file_path='client/config.js';
 const config = JSON.parse(fs.readFileSync(config_file_path));
 
 const config_defaults = {
@@ -13,11 +14,12 @@ for(key in config_defaults)
 	if(!(key in config))
 		config[key] = config_defaults[key];
 
-write_config_to_file(config, config_file_path)
+write_config_to_file(config)
 
-function write_config_to_file(data, path) {
+function write_config_to_file(data) {
 	try {
-		fs.writeFileSync(path, JSON.stringify(data))
+		fs.writeFileSync(config_file_path, JSON.stringify(data));
+		fs.writeFileSync(client_config_file_path, "var config = " + JSON.stringify(data));
 	} catch (err) {
 		console.error(err)
 	}

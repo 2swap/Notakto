@@ -1,10 +1,8 @@
-var production = false;
-
 var socket;
-if(production)
+if(config.prod_mode)
 	socket = io('alexhontz.com', {path:'/Notakto/io'});
 else
-	socket = io('127.0.0.1:10003');
+	socket = io('127.0.0.1:'+config.port);
 
 var canvas = document.getElementById('ctx');
 canvas.width = window.innerWidth;
