@@ -23,7 +23,7 @@ onClientClick = function(boardList, data){
 	if(x >= width || x < 0)
 		return false;
 
-    if(pushup == 0)
+    if(pushupType == 0)
     	for(var y = 0; y < height; y++){
             if(boardList[x][y] == 0){
                 boardList[x][y] = currentPlayer;
@@ -32,13 +32,13 @@ onClientClick = function(boardList, data){
             if(y == height-1)
                 return false;
 	    }
-    else if (pushup==1){
+    else if (pushupType==1){
     	for(var y = height-1; y > 0; y--){
             boardList[x][y] = boardList[x][y-1];
 	    }
         boardList[x][y] = currentPlayer;
     }
-    else if(pushup == 2){
+    else if(pushupType == 2){
         if(boardList[x][height-1] != 0)
             return false;
     	for(var y = height-1; y > 0; y--){
