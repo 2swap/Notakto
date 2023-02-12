@@ -1,4 +1,4 @@
-const game = require("./connect4_server.js");
+const game = require("./gameservers/connect4_server.js");
 
 const fs = require('fs');
 const config_file_path='config.json';
@@ -38,11 +38,18 @@ else
 var httpServer = http.createServer(app);
 httpServer.listen(config.port);
 console.log("Server started on port " + config.port);
-var io;
+var args = {
+    cors: {
+        origin: "http://localhost:8100",
+        methods: ["GET", "POST"],
+        transports: ['websocket', 'polling'],
+        credentials: true
+    },
+    allowEIO3: true
+}
 if(config.prod_mode)
-	io = require('socket.io')(httpServer, {"path": "/Notakto/io"});
-else
-	io = require('socket.io')(httpServer);
+    args[path] = "/Notakto/io";
+var io = require('socket.io')(httpServer, args);
 
 
 var boardList = game.makeBoard();

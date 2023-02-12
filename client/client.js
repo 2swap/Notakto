@@ -2,7 +2,7 @@ var socket;
 if(config.prod_mode)
 	socket = io('alexhontz.com', {path:'/Notakto/io'});
 else
-	socket = io('127.0.0.1:'+config.port);
+	socket = io('localhost:'+config.port);
 
 var canvas = document.getElementById('ctx');
 canvas.width = window.innerWidth;
