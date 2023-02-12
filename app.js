@@ -1,9 +1,13 @@
 const game = require("./kalah_server.js");
-require("./client/config.js");
 
 const fs = require('fs');
-const config_file_path='client/config.js';
+const config_file_path='client/config.json';
 const config = JSON.parse(fs.readFileSync(config_file_path));
+
+const config_defaults = {
+	port: 10003,
+	prod_mode: false,
+}
 
 for(key in config_defaults)
 	if(!(key in config))
