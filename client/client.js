@@ -55,9 +55,6 @@ setInterval(function(){
 	h = window.innerHeight;
 	canvas.width = w;
 	canvas.height = h;
-	squareWidth = w/15;
-	boardMarg = squareWidth/2;
-	boardWidth = squareWidth*3;
 	render();
 },100);
 

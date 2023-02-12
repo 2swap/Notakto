@@ -1,4 +1,4 @@
-const game = require("./kalah_server.js");
+const game = require("./connect4_server.js");
 
 const fs = require('fs');
 const config_file_path='config.json';
