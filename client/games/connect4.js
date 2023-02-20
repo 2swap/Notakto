@@ -19,14 +19,15 @@ function renderGame(){
 	//render highlighted column
 	ctx.fillStyle = "#999999";
 	if(mouseHoverColumn >= 0 && mouseHoverColumn < width){
-	    roundRect(w/2-boardWidth/2+mouseHoverColumn*squareWidth,h/2-boardHeight/2,squareWidth,boardHeight, boardMarg);
+		roundRect(w/2-boardWidth/2+mouseHoverColumn*squareWidth,h/2-boardHeight/2,squareWidth,boardHeight, boardMarg);
 	}
 
 	for(var y = 0; y < height; y++)
 		for(var x = 0; x < width; x++){
-            var colors = ["#bbbbbb", "#dd4444", "#dddd44"];
+			var colors = ["#bbbbbb", "#dd4444", "#dddd44"];
+			console.log(boardList, x, y, boardList[x][y]);
 			ctx.fillStyle = colors[boardList[x][y]];
-            ctx.beginPath();
+			ctx.beginPath();
 			ctx.arc(w/2+(x-(width-1)/2)*squareWidth,h/2+(-y+(height-1)/2)*squareWidth,squareWidth/2.5, 0, 2*Math.PI);
 			ctx.fill();
 		}
