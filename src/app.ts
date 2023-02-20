@@ -3,7 +3,11 @@ import {
 	Server as SocketIOServer,
 	ServerOptions as SocketIOServerOptions,
 } from 'socket.io';
-import * as game from './gameservers/connect4_server';
+import {
+	IBoardType,
+	makeBoard,
+	onClientClick,
+} from './gameservers/notakto_server';
 import fs from 'fs';
 import http from 'http';
 import express from 'express';
@@ -78,7 +82,7 @@ interface ISocketMap {
 
 const io = new SocketIOServer(httpServer, args);
 const sockets: ISocketMap = {};
-let boardList = game.makeBoard();
+let boardList = makeBoard();
 
 
 function send(socket: Socket, msg: string, data: ISocketBoardList){
@@ -87,7 +91,7 @@ function send(socket: Socket, msg: string, data: ISocketBoardList){
 }
 
 interface ISocketBoardList {
-	boardList: Array<Array<number>>,
+	boardList: IBoardType,
 }
 
 function broadcast(msg: string, data: ISocketBoardList){
@@ -159,12 +163,12 @@ io.sockets.on('connection', (socket: Socket) => {
 	});
 
 	socket.on('restart', () => {
-		boardList = game.makeBoard();
+		boardList = makeBoard();
 		broadcastBoard()
 	});
 
 	socket.on('click', (mouseCoordinates: IMouseCoordinates) => {
-		if(game.onClientClick(boardList, mouseCoordinates))
+		if(onClientClick(boardList, mouseCoordinates))
 			broadcastBoard();
 	});
 

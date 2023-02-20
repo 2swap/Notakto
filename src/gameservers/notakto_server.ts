@@ -2,7 +2,7 @@ import { IMouseCoordinates } from "../interfaces/socket_events";
 
 const numberOfBoards = 6;
 
-type IBoardType = Array<{
+export type IBoardType = Array<{
 	isDead: boolean,
 	grid: Array<Array<string>>,
 }>;

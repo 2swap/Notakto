@@ -2,7 +2,7 @@ import { IMouseCoordinates } from "../interfaces/socket_events";
 
 const boardSize = 11;
 
-type IBoardType = Array<Array<string>>;
+export type IBoardType = Array<Array<string>>;
 
 export function onClientClick(boardList: IBoardType, mouseCoordinates: IMouseCoordinates): boolean {
 	// don't permit data with absent coordinates

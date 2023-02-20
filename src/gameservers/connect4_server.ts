@@ -7,7 +7,7 @@ let currentPlayer = 1;              // Whose turn is it - first player is 1 and 
 
 let pushupType = 1; //0=normal 1=pushup 2=falloutoftop
 
-type IBoardType = Array<Array<number>>;
+export type IBoardType = Array<Array<number>>;
 
 export function onClientClick(boardList: IBoardType, mouseCoordinates: IMouseCoordinates): boolean {
 	// don't permit data with absent coordinates

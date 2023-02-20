@@ -8,7 +8,7 @@ const southsKalahah = m;			// Array index of South's large pit
 const totalStones = n*m*2;		// Amount of stones on board in total
 
 
-type IBoardType = Array<number>;
+export type IBoardType = Array<number>;
 
 export function onClientClick(boardList: IBoardType, mouseCoordinates: IMouseCoordinates): boolean {
 	// don't permit data with absent coordinates
