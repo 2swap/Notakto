@@ -1,17 +1,24 @@
-var numberOfBoards = 6;
+import { IMouseCoordinates } from "../interfaces/socket_events";
 
-onClientClick = function(boardList, data){
+const numberOfBoards = 6;
+
+export type IBoardType = Array<{
+	isDead: boolean,
+	grid: Array<Array<string>>,
+}>;
+
+export function onClientClick (boardList: IBoardType, mouseCoordinates: IMouseCoordinates): boolean {
 	// don't permit data with absent coordinates
-	if(typeof data === "undefined")
+	if(typeof mouseCoordinates === "undefined")
 		return false;
 
 	// don't permit data with absent coordinates
-	if(!("x" in data) || !("y" in data) || !("i" in data))
+	if(!("x" in mouseCoordinates) || !("y" in mouseCoordinates) || !("i" in mouseCoordinates))
 		return false;
 
-	var x = data.x;
-	var y = data.y;
-	var i = data.i;
+	const x = mouseCoordinates.x;
+	const y = mouseCoordinates.y;
+	const i = mouseCoordinates.i;
 
 	// don't permit data with non-integer coordinates
 	if(!Number.isInteger(x) || !Number.isInteger(y) || !Number.isInteger(i))
@@ -38,10 +45,10 @@ onClientClick = function(boardList, data){
 	return true;
 };
 
-checkDead = function(boardList, i){
-	for(var y = 0; y < 3; y++){
-		allFilled = true;
-		for(var x = 0; x < 3; x++){
+function checkDead(boardList: IBoardType, i: number): boolean{
+	for(let y = 0; y < 3; y++){
+		let allFilled = true;
+		for(let x = 0; x < 3; x++){
 			if(boardList[i].grid[y][x] == ''){
 				allFilled = false;
 			}
@@ -50,9 +57,9 @@ checkDead = function(boardList, i){
 			return true;
 	}
 
-	for(var x = 0; x < 3; x++){
-		allFilled = true;
-		for(var y = 0; y < 3; y++){
+	for(let x = 0; x < 3; x++){
+		let allFilled = true;
+		for(let y = 0; y < 3; y++){
 			if(boardList[i].grid[y][x] == ''){
 				allFilled = false;
 			}
@@ -69,15 +76,17 @@ checkDead = function(boardList, i){
 	return false;
 };
 
-makeBoard = function(){
-	var boardList = []
-	for(var i = 0; i < numberOfBoards; i++){
-		boardList[i] = {isDead:false, grid: [ ['', '', ''], ['', '', ''], ['', '', ''] ]};
+export function makeBoard(): IBoardType {
+	const boardList: IBoardType = []
+	for(let i = 0; i < numberOfBoards; i++){
+		boardList[i] = {
+			isDead: false,
+			grid: [
+				['', '', ''],
+				['', '', ''],
+				['', '', '']
+			]
+		};
 	}
 	return boardList;
 };
-
-module.exports = {
-	makeBoard:makeBoard,
-	onClientClick:onClientClick,
-}
