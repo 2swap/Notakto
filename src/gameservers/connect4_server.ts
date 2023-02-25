@@ -71,6 +71,7 @@ export function makeBoard(): Array<Array<number>> {
 	for(let i = 0; i < width; i++){
         b[i] = new Array(height).fill(0);
 	}
+    currentPlayer = 1;
 	return b;
 };
 

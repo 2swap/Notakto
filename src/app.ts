@@ -7,7 +7,7 @@ import {
 	IBoardType,
 	makeBoard,
 	onClientClick,
-} from './gameservers/notakto_server';
+} from './gameservers/connect4_server';
 import fs from 'fs';
 import http from 'http';
 import express from 'express';
