@@ -5,7 +5,7 @@ const height = 6;                     // number of rows
 const width = 7;                      // number of columns
 let currentPlayer = 1;              // Whose turn is it - first player is 1 and second is 2. 0 signifies empty square
 
-let pushupType = 1; //0=normal 1=pushup 2=falloutoftop
+let pushupType = 0; //0=normal 1=pushup 2=falloutoftop
 
 export type IBoardType = Array<Array<number>>;
 

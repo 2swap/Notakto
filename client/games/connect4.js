@@ -13,18 +13,18 @@ var boardHeight = squareWidth * height;
 
 function renderGame(){
 	//render board outline
-	ctx.fillStyle = "#777777";
+	ctx.fillStyle = "#333399";
 	roundRect(w/2-(boardWidth+boardMarg)/2,h/2-(boardHeight+boardMarg)/2,boardWidth+boardMarg,boardHeight+boardMarg, boardMarg);
 
 	//render highlighted column
-	ctx.fillStyle = "#999999";
+	ctx.fillStyle = "#222288";
 	if(mouseHoverColumn >= 0 && mouseHoverColumn < width){
 		roundRect(w/2-boardWidth/2+mouseHoverColumn*squareWidth,h/2-boardHeight/2,squareWidth,boardHeight, boardMarg);
 	}
 
 	for(var y = 0; y < height; y++)
 		for(var x = 0; x < width; x++){
-			var colors = ["#bbbbbb", "#dd4444", "#dddd44"];
+			var colors = ["#222288", "#ee3333", "#eeee33"];
 			console.log(boardList, x, y, boardList[x][y]);
 			ctx.fillStyle = colors[boardList[x][y]];
 			ctx.beginPath();
