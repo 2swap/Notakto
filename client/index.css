@@ -1,6 +1,6 @@
 @font-face {
 	font-family: 'Telegrama';
-	src: url('img/telegrama2.otf');
+	src: url('assets/telegrama2.otf');
 }
 
 body, #a {
@@ -12,10 +12,12 @@ body, #a {
 	left: 0;
 	top: 0;
 	bottom: 0;
+
+	width: 100vw;
 }
 
 button {
-	background-color: rgb(63, 62, 62); 
+	background-color: rgb(63, 62, 62);
 	border: none;
 	padding-top: 10px;
 	padding-bottom:  10px;

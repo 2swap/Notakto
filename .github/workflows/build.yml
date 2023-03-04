@@ -27,4 +27,7 @@ jobs:
       run: npm install
 
     - name: Transpile Typescript Server
-      run: npm run build
+      run: npm run build:server
+
+    - name: Transpile Typescript Client
+      run: npm run build:client

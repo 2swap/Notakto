@@ -40,7 +40,7 @@ write_config_to_file(config)
 function write_config_to_file(data: IAppConfiguration) {
 	try {
 		fs.writeFileSync(config_file_path, JSON.stringify(data));
-		fs.writeFileSync(client_config_file_path, "var config = " + JSON.stringify(data));
+		fs.writeFileSync(client_config_file_path, "const config = " + JSON.stringify(data));
 	} catch (err) {
 		console.error(err)
 	}
@@ -54,7 +54,7 @@ const app = express();
 if(config.prod_mode)
 	app.use('/Notakto/',express.static(__dirname + '/client'));
 else
-	app.use('/',express.static(__dirname + '/../client'));
+	app.use('/',express.static(__dirname + '/client'));
 const httpServer = http.createServer(app);
 httpServer.listen(config.port);
 console.log("Server started on port " + config.port);
